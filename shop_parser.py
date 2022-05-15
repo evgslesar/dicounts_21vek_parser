@@ -33,43 +33,44 @@ def get_json():
     return data
 
 
-def get_articles(data):
+def get_articles():
+    data = get_json()
     articles = {}
     counter = 0
     for item in data:
         for sale in item["sales"]:
-            article_card = {
-                f"{sale.get('id')}": 
-                    {
-                        "brand": item.get("producerName"),
-                        "name": item.get("name"),
-                        "model": item.get("model"),
-                        "full_price": item.get("oldPrice"),
-                        "normal_price": item.get("price"),
-                        "sale_price": sale.get("price"),
-                        "discount": sale.get("promoDiscount"),
-                        "description": sale.get("description"),
-                        "item_url": "https://www.21vek.by/" + item.get("url"),
-                        "sale_picture": sale.get("image"),
-                        "item_picture": item.get("picture")
+            if sale.get("promoDiscount") != 0:
+                article_card = {
+                    f"{sale.get('id')}": 
+                        {
+                            "brand": item.get("producerName"),
+                            "name": item.get("name"),
+                            "model": item.get("model"),
+                            "full_price": item.get("oldPrice"),
+                            "normal_price": item.get("price"),
+                            "sale_price": sale.get("price"),
+                            "discount": sale.get("promoDiscount"),
+                            "description": sale.get("description"),
+                            "item_url": "https://www.21vek.by/" + item.get("url"),
+                            "sale_picture": sale.get("image"),
+                            "item_picture": item.get("picture")
+                        }
                     }
-                }
 
-            articles.update(article_card)
-            counter += 1
-            print(counter)
+                articles.update(article_card)
+                counter += 1
+    print(counter)
 
     return articles
 
 
 def write_to_json(articles):
-    with open("sales_article.json", "w", encoding="utf-8") as file:
-        json.dump(articles, file)
+    with open("sales_articles.json", "w", encoding="utf-8") as file:
+        json.dump(articles, file, indent=4, ensure_ascii=False)
 
 
 def main():
-    data = get_json()
-    articles = get_articles(data)
+    articles = get_articles()
     write_to_json(articles)
 
 
