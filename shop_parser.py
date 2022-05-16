@@ -1,5 +1,6 @@
 import requests
 import json
+import csv
 
 def get_json():
     url = "https://gate.21vek.by/special-offers/api/products/list"
@@ -23,7 +24,7 @@ def get_json():
     }
 
     data = []
-    for page in range(1, 11):
+    for page in range(1, 16):
         querystring = {"page":f"{page}","limit":"48","discount_types":"sale"}
         
         response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
@@ -43,12 +44,13 @@ def get_articles():
                 article_card = {
                     f"{sale.get('id')}": 
                         {
+                            "sale_id": sale.get('id'),
                             "brand": item.get("producerName"),
                             "name": item.get("name"),
                             "model": item.get("model"),
-                            "full_price": item.get("oldPrice"),
-                            "normal_price": item.get("price"),
-                            "sale_price": sale.get("price"),
+                            "full_price": float(item.get("oldPrice")),
+                            "normal_price": float(item.get("price")),
+                            "sale_price": float(sale.get("price")),
                             "discount": sale.get("promoDiscount"),
                             "description": sale.get("description"),
                             "item_url": "https://www.21vek.by/" + item.get("url"),
@@ -67,6 +69,18 @@ def get_articles():
 def write_to_json(articles):
     with open("sales_articles.json", "w", encoding="utf-8") as file:
         json.dump(articles, file, indent=4, ensure_ascii=False)
+
+
+def write_to_csv(articles):
+    with open("sales_articles.csv", "w", encoding="utf-8", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Артикул распродажи", "Наименование", "Бренд", 
+                        "Модель", "Полная цена", "Обычная цена", "Цена распродажи", 
+                        "Скидка в %", "Описание", "Ссылка на товар", 
+                        "Изображение уцененного", "Обычное изображение"])
+        for article in articles.values():
+            writer.writerow(list(article.values()))
+
 
 
 def main():
